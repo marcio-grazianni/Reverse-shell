@@ -1,0 +1,12 @@
+G:\Upwork\vhk\Reverse-Shell-master\Reverse-Shell-master\ReverseShell\bin\Debug\ReverseShellClient.exe.config
+G:\Upwork\vhk\Reverse-Shell-master\Reverse-Shell-master\ReverseShell\bin\Debug\ReverseShellClient.exe
+G:\Upwork\vhk\Reverse-Shell-master\Reverse-Shell-master\ReverseShell\bin\Debug\ReverseShellClient.pdb
+G:\Upwork\vhk\Reverse-Shell-master\Reverse-Shell-master\ReverseShell\obj\Debug\ReverseShell.csproj.AssemblyReference.cache
+G:\Upwork\vhk\Reverse-Shell-master\Reverse-Shell-master\ReverseShell\obj\Debug\ReverseShell.csproj.SuggestedBindingRedirects.cache
+G:\Upwork\vhk\Reverse-Shell-master\Reverse-Shell-master\ReverseShell\obj\Debug\ReverseShell.csproj.CoreCompileInputs.cache
+G:\Upwork\vhk\Reverse-Shell-master\Reverse-Shell-master\ReverseShell\obj\Debug\ReverseShellClient.exe
+G:\Upwork\vhk\Reverse-Shell-master\Reverse-Shell-master\ReverseShell\obj\Debug\ReverseShellClient.pdb
+G:\Upwork\vhk\Reverse-Shell-master\Reverse-Shell-master\ReverseShell\bin\Debug\System.Management.Automation.dll
+G:\Upwork\vhk\Reverse-Shell-master\Reverse-Shell-master\ReverseShell\bin\Debug\Microsoft.Management.Infrastructure.dll
+G:\Upwork\vhk\Reverse-Shell-master\Reverse-Shell-master\ReverseShell\bin\Debug\System.Management.Automation.xml
+G:\Upwork\vhk\Reverse-Shell-master\Reverse-Shell-master\ReverseShell\obj\Debug\ReverseShell.csproj.CopyComplete
