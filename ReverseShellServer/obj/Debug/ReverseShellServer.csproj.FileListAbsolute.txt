@@ -16,7 +16,3 @@ G:\Upwork\vhk\Reverse-Shell-master\Reverse-Shell-master\ReverseShellServer\obj\D
 G:\Upwork\vhk\Reverse-Shell-master\Reverse-Shell-master\ReverseShellServer\obj\Debug\ReverseShellServer.csproj.CoreCompileInputs.cache
 G:\Upwork\vhk\Reverse-Shell-master\Reverse-Shell-master\ReverseShellServer\obj\Debug\ReverseShellServer.exe
 G:\Upwork\vhk\Reverse-Shell-master\Reverse-Shell-master\ReverseShellServer\obj\Debug\ReverseShellServer.pdb
-G:\Upwork\vhk\Reverse-Shell-master\Reverse-Shell-master\ReverseShellServer\bin\Debug\System.Management.Automation.dll
-G:\Upwork\vhk\Reverse-Shell-master\Reverse-Shell-master\ReverseShellServer\bin\Debug\Microsoft.Management.Infrastructure.dll
-G:\Upwork\vhk\Reverse-Shell-master\Reverse-Shell-master\ReverseShellServer\bin\Debug\System.Management.Automation.xml
-G:\Upwork\vhk\Reverse-Shell-master\Reverse-Shell-master\ReverseShellServer\obj\Debug\ReverseShellServer.csproj.CopyComplete

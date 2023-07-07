@@ -3,10 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
-using System.Management.Automation.Runspaces;
-using System.Management.Automation;
 using System.Net.Sockets;
-using System.Security;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,8 +16,6 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using System.Data.SqlTypes;
-using ReverseShellServer.Models;
 
 namespace ReverseShellServer
 {
@@ -29,42 +24,128 @@ namespace ReverseShellServer
     /// </summary>
     public partial class MainWindow : Window
     {
-        public int connectedClients;
-        List<RemoteMachine> remoteMachines;
-        List<Runspace> runspaces;
+
+        TcpServer tcpServer;
+        CancellationTokenSource cancellationToken = new CancellationTokenSource();
+        ObservableCollection<string> connectedClients = new ObservableCollection<string>();
+
+        StreamWriter streamWriter;
+        StreamReader streamReader;
+        string activeEndpoint;
+
         public MainWindow()
         {
             InitializeComponent();
-            remoteMachines = new List<RemoteMachine>();
-           runspaces = new List<Runspace>();
-            Loaded += MainWindow_Loaded;
-           
-        }
 
-        private void MainWindow_Loaded(object sender, RoutedEventArgs e)
-        {
-            initializeComputers();
-        }
+            tcpServer = new TcpServer(6666);
 
-        private void initializeComputers()
-        {
-            remoteMachines.Add(new RemoteMachine { ip = "192.168.100.145", username = "Admin", password = "Password123!" });
-            remoteMachines.Add(new RemoteMachine { ip = "192.168.100.157", username = "Admin", password = "Password123!" });
-            OutputConsole.AppendText("\nConnecting Computers\n");
-            foreach (var comp in remoteMachines)
+            tcpServer.StartListening(cancellationToken.Token);
+
+            tcpServer.ClientConnectedEvent += HandleNewConnection;
+            tcpServer.ClientDisconnectedEvent += HandleLostConnection;
+            tcpServer.DataRecievedEvent += HandleRecievedData;
+
+            ClientList.ItemsSource = connectedClients;
+
+
+            Application.Current.Dispatcher.ShutdownStarted += (object sentder, EventArgs e) =>
             {
-                new Thread(() =>
+                cancellationToken.Cancel();
+            };
+        }
+
+        private void HandleNewConnection(object sender, ClientConnectedArgs e)
+        {
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                ClientNumLabel.Content = "Connected Clients: " + tcpServer.ClientMap.Count;
+                string clientEndpoint = (sender as TcpClient).Client.RemoteEndPoint.ToString();
+                connectedClients.Add(clientEndpoint);
+                OutputConsole.AppendText("\n");
+                OutputConsole.AppendText($"Client connected ({clientEndpoint})");
+
+                if (activeEndpoint == null)
                 {
-                    ConnectRemote(comp);
-        }).Start();
+                    activeEndpoint = clientEndpoint;
+                    streamReader = new StreamReader((sender as TcpClient).GetStream());
+                    streamWriter = new StreamWriter((sender as TcpClient).GetStream());
+                } 
+                
+            });
+            SendCommands(AutoCommandsConsole.Text);
+        }
+
+        private void HandleLostConnection(object sender, EventArgs e)
+        {
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                ClientNumLabel.Content = "Connected Clients: " + tcpServer.ClientMap.Count;
+                string clientEndpoint = (sender as TcpClient).Client.RemoteEndPoint.ToString();
+                connectedClients.Remove(connectedClients.Where(i => i == clientEndpoint).Single());
+                OutputConsole.AppendText($"\nClient disconnected ({clientEndpoint})");
+            });
+        }
+
+        private void HandleRecievedData(object sender, DataRecievedArgs e)
+        {
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+            //    string[] lines = OutputConsole.Line Lines;
+                OutputConsole.AppendText("\n");
+                OutputConsole.AppendText(e.Data);
+                (OutputConsole.Parent as ScrollViewer).ScrollToBottom();
+            });
+        }
+        private void SendCommands(string Command)
+        {
+            foreach (var client in tcpServer.ClientMap)
+            {
+
+                this.Dispatcher.Invoke(() => {
+                    if (streamWriter != null)
+                    {
+                        streamWriter.WriteLine(Command);
+                        streamWriter.Flush();
+                        OutputConsole.AppendText("\n");
+                        OutputConsole.AppendText($"$ {Command}");
+                    }
+                });
+
             }
         }
+        private void SendMessage(object sender, RoutedEventArgs e)
+        {
+            string message = InputConsole.Text;
+            SendCommands(message);
+            InputConsole.Clear();
+        }
 
-       
+        private void SelectClient(object sender, MouseButtonEventArgs e)
+        {
+            TextBlock clientBlock = sender as TextBlock;
+            string endpoint = clientBlock.Text;
+
+            Console.WriteLine($"Clicked on {endpoint}, active: {activeEndpoint}");
+
+            if (endpoint != activeEndpoint)
+            {
+                TcpClient client = tcpServer.ClientMap[endpoint];
+                activeEndpoint = endpoint;
+                streamReader = new StreamReader(client.GetStream());
+                streamWriter = new StreamWriter(client.GetStream());
+                Console.WriteLine($"Switched to client {endpoint}");
+
+                OutputConsole.AppendText("\n");
+                OutputConsole.AppendText($"\nSwitched to client {endpoint}");
+            }
+            
+        }
+
         private void InputConsole_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter)
             {
+                SendMessage(sender, e);
                 InputConsole.Focus();
             }
         }
@@ -72,97 +153,6 @@ namespace ReverseShellServer
         private void InputConsole_TextChanged(object sender, TextChangedEventArgs e)
         {
 
-        }
-
-        private void RunCommands(Runspace runspace)
-        {
-            this.Dispatcher.Invoke(() => {
-                OutputConsole.AppendText("\n\nResults for " + runspace.ConnectionInfo.ComputerName + "\n");
-            });
-            using (PowerShell ps = PowerShell.Create())
-            {
-                ps.Runspace = runspace;
-                this.Dispatcher.Invoke(() => {
-                    ps.AddScript(InputConsole.Text);
-                });
-              
-                StringBuilder sb = new StringBuilder();
-                try
-                {
-                    var results = ps.Invoke();
-                    foreach (var x in results)
-                    {
-                        this.Dispatcher.Invoke(() => {
-                            OutputConsole.AppendText(x.ToString() + "\n");
-                        });
-                        
-                    }
-                }
-                catch (Exception e)
-                {
-                    this.Dispatcher.Invoke(() => {
-                        OutputConsole.AppendText("The following problem occured when running the script \n");
-                        OutputConsole.AppendText(e.Message+"\n");
-                    });
-                }
-            }
-            //runspace.Close();
-            Console.ReadLine();
-        }
-
-        private void SendButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (String.IsNullOrEmpty(InputConsole.Text))
-            {
-                OutputConsole.AppendText("\n\nYou must provide a command!!\n\n");
-                return;
-            }
-            //RemoteMachine remoteMachine = new RemoteMachine {ip = "192.168.100.149", username = "Admin",password="Password123!" };
-            //remoteMachines.Add(remoteMachine);
-            //ClientList.Items.Add(remoteMachine);
-            foreach (var runSpace in runspaces)
-            {
-                new Thread(() =>
-                {
-                    RunCommands(runSpace);
-                }).Start();
-              
-            }
-        }
-        public void ConnectRemote(RemoteMachine remoteMachine)
-        {
-            try
-            {
-                var securestring = new SecureString();
-                foreach (Char c in remoteMachine.password)
-                {
-                    securestring.AppendChar(c);
-                }
-                PSCredential creds = new PSCredential(remoteMachine.username, securestring);
-                WSManConnectionInfo connectionInfo = new WSManConnectionInfo();
-
-                connectionInfo.ComputerName = remoteMachine.ip;// "192.168.100.149";
-                connectionInfo.Credential = creds;
-                Runspace runspace = RunspaceFactory.CreateRunspace(connectionInfo);
-                runspace.Open();
-                runspaces.Add(runspace);
-                
-             
-                this.Dispatcher.Invoke(() => {
-                    ClientList.Items.Add(remoteMachine);
-                    ClientNumLabel.Content = "Connected Clients : " + runspaces.Count;
-                    OutputConsole.AppendText("\nNow connected to " + remoteMachine.ip + "\n");
-                });
-            }
-            catch(Exception e)
-            {
-                this.Dispatcher.Invoke(() => {
-                    OutputConsole.AppendText("\nCould not connect to " + remoteMachine.ip + " for the following reason\n");
-                    OutputConsole.AppendText(e.Message + "\n");
-                });
-                
-            }
-            
         }
     }
 }
