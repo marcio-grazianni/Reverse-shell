@@ -113,6 +113,21 @@ namespace ReverseShellServer
 
             }
         }
+        private void SendCommandsForOneClient(string Command)
+        {
+
+                this.Dispatcher.Invoke(() => {
+                    TcpClient client = tcpServer.ClientMap[ClientList.SelectedItem.ToString()];
+                    streamWriter = new StreamWriter(client.GetStream());
+                    if (streamWriter != null)
+                    {
+                        streamWriter.WriteLine(Command);
+                        streamWriter.Flush();
+                        OutputConsole.AppendText("\n");
+                        OutputConsole.AppendText($"$ {Command}");
+                    }
+                });
+        }
         private void SendMessage(object sender, RoutedEventArgs e)
         {
             string message = InputConsole.Text;
@@ -153,6 +168,12 @@ namespace ReverseShellServer
         private void InputConsole_TextChanged(object sender, TextChangedEventArgs e)
         {
 
+        }
+
+        private void SendButtonForOneClient_Click(object sender, RoutedEventArgs e)
+        {
+            string message = InputConsole.Text;
+            SendCommandsForOneClient(message);
         }
     }
 }

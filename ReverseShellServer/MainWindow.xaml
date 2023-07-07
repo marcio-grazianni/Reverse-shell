@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:ReverseShellServer"
         mc:Ignorable="d"
         Title="TCP Server Console" Height="555.6" Width="1013.2" Background="White">
-    <Grid x:Name="grid" ShowGridLines="True">
+    <Grid x:Name="grid">
         <Grid.RowDefinitions>
             <RowDefinition Height="20*"/>
             <RowDefinition Height="40"/>
@@ -42,7 +42,11 @@
             <Label Width="18" Content="$" Foreground="White" Margin="0" VerticalContentAlignment="Center" Height="30" />
             <TextBox x:Name="InputConsole" Margin="0,0,5,0" TextWrapping="Wrap" Background="{x:Null}" Padding="5,0" FontFamily="Fira Code" Height="30" Foreground="White" VerticalContentAlignment="Center" KeyDown="InputConsole_KeyDown" TextChanged="InputConsole_TextChanged" BorderBrush="#FF797979" SelectionBrush="White" CaretBrush="White" />
         </DockPanel>
-        <Button x:Name="SendButton" Content="Send" HorizontalAlignment="Left" Margin="10,0,0,0" Grid.Row="2" Width="101" Click="SendMessage" Grid.Column="1" VerticalAlignment="Center"/>
+        <StackPanel Grid.Row="2" Grid.Column="1" Orientation="Horizontal">
+            <Button x:Name="SendButton" Content="Send" HorizontalAlignment="Left" Margin="10,0,0,0" Grid.Row="2" Width="101" Click="SendMessage" Grid.Column="1" VerticalAlignment="Center"/>
+            <Button x:Name="SendButtonForOneClient" Content="Send To One" HorizontalAlignment="Left" Margin="10,0,0,0" Grid.Row="2" Width="101" Click="SendButtonForOneClient_Click" Grid.Column="1" VerticalAlignment="Center"/>
 
+        </StackPanel>
+      
     </Grid>
 </Window>
