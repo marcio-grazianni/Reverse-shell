@@ -1,4 +1,4 @@
-# Reverse shell
+.# Reverse shell
 A basic reverse shell for Windows in .NET with a simple WPF UI.
 
 The projects includes the __ReverseShell__ client and the __ReverseShellServer__.
